@@ -8,7 +8,6 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import jakarta.validation.Valid;
-import org.antlr.v4.runtime.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

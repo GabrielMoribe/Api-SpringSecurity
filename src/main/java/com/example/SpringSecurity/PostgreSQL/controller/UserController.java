@@ -1,6 +1,7 @@
 package com.example.SpringSecurity.PostgreSQL.controller;
 
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.UpdateUserRequest;
+import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UpdateUserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.service.UserService;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/users")
@@ -20,18 +20,22 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<UpdateUserResponse> getUserProfile() {
+    public ResponseEntity<ApiResponse<UpdateUserResponse>> getUserProfile() {
         User user = userService.findUser();
-        return ResponseEntity.status(HttpStatus.OK).body(new UpdateUserResponse(user.getName(),user.getEmail()));
+        ApiResponse<UpdateUserResponse> response = ApiResponse.success(new UpdateUserResponse(user.getName(), user.getEmail()));
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+        //return ResponseEntity.status(HttpStatus.OK).body(new UpdateUserResponse(user.getName(),user.getEmail()));
     }
     @PutMapping("/profile/update")
-    public ResponseEntity<UpdateUserResponse> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+    public ResponseEntity<ApiResponse<UpdateUserResponse>> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
         User updatedUser = userService.updateUser(updateUserRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(new UpdateUserResponse(updatedUser.getName(),updatedUser.getEmail()));
+        ApiResponse<UpdateUserResponse> response = ApiResponse.success(new UpdateUserResponse(updatedUser.getName(), updatedUser.getEmail()));
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @DeleteMapping("/profile/delete")
-    public ResponseEntity<Void> deleteUserProfile() {
+    public ResponseEntity<ApiResponse<Void>> deleteUserProfile() {
         userService.deleteUser();
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        ApiResponse<Void> response = ApiResponse.success(null);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

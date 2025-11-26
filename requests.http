@@ -8,7 +8,7 @@ Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
 
 {
-  "name": "Testado",
+  "name": "Testado2",
   "email": "testado@email.com"
 }
 
@@ -35,6 +35,6 @@ POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "email": "teste@email.com",
+  "email": "testado@email.com",
   "password": "123123"
 }
