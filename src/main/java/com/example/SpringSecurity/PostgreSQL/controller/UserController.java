@@ -24,7 +24,6 @@ public class UserController {
         User user = userService.findUser();
         ApiResponse<UpdateUserResponse> response = ApiResponse.success(new UpdateUserResponse(user.getName(), user.getEmail()));
         return ResponseEntity.status(HttpStatus.OK).body(response);
-        //return ResponseEntity.status(HttpStatus.OK).body(new UpdateUserResponse(user.getName(),user.getEmail()));
     }
     @PutMapping("/profile/update")
     public ResponseEntity<ApiResponse<UpdateUserResponse>> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
