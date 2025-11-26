@@ -1,0 +1,40 @@
+### GET fetch user profile
+GET http://localhost:8080/users/profile
+Authorization: Bearer <JWT_TOKEN>
+
+### PUT update user profile
+PUT http://localhost:8080/users/profile/update
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+
+{
+  "name": "Testado",
+  "email": "testado@email.com"
+}
+
+
+### DELETE user profile
+DELETE http://localhost:8080/users/profile/delete
+Authorization: Bearer <JWT_TOKEN>
+
+
+
+
+### POST Register User
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "name": "Teste",
+  "email": "teste@email.com",
+  "password": "123123"
+}
+
+### POST Login User
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "teste@email.com",
+  "password": "123123"
+}
