@@ -1,0 +1,47 @@
+name: Java CI pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Banco de dados
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: testSpringSecurity
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/testSpringSecurity
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+          API_SECURITY_TOKEN_SECRET: chave_para_teste_build_423974987
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        run: ./mvnw clean verify

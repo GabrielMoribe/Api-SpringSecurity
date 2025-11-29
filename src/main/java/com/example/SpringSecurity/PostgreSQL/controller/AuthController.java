@@ -24,13 +24,6 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse login = authService.login(request);
-        ApiResponse<LoginResponse> response = ApiResponse.success(login);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegUserResponse>> register(@Valid @RequestBody RegUserRequest request) {
         RegUserResponse register = authService.register(request);
@@ -38,10 +31,19 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<VerifyUserResponse>> verify(@Valid @RequestBody VerifyUserRequest request) {
         VerifyUserResponse verify = authService.verifyUser(request);
         ApiResponse<VerifyUserResponse> response = ApiResponse.success(verify);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse login = authService.login(request);
+        ApiResponse<LoginResponse> response = ApiResponse.success(login);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

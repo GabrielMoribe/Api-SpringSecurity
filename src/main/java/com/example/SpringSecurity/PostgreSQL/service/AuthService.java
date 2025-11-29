@@ -8,8 +8,8 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.response.LoginResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
+import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
-import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 
 @Service
 public class AuthService implements UserDetailsService {
@@ -44,19 +43,31 @@ public class AuthService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findUserByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado"));
     }
 
-    private RegUserResponse mapToRegResponse(User user) {
+    private RegUserResponse mapToResponse(User user) {
         return new RegUserResponse(user.getName(), user.getEmail());
     }
 
+
+
+
     public LoginResponse login(LoginRequest request) {
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(request.email(), request.password());
-        Authentication authentication = authenticationManager.authenticate(authToken);
-        User user = (User) authentication.getPrincipal();
-        String token = tokenConfig.generateToken(user);
-        return new LoginResponse(token);
+
+            String lowerCaseEmail = request.email().toLowerCase();
+//            if(!userRepository.findUserByEmail(lowerCaseEmail).isPresent()){
+//                throw new UsernameNotFoundException("Usuario nao cadastrado");
+//           }
+//            else{
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(lowerCaseEmail, request.password());
+                Authentication authentication = authenticationManager.authenticate(authToken);
+                User user = (User) authentication.getPrincipal();
+                String token = tokenConfig.generateToken(user);
+                return new LoginResponse(token);
+//            }
+
+
     }
 
 
@@ -64,31 +75,31 @@ public class AuthService implements UserDetailsService {
         Optional<User> existingUserOpt = userRepository.findUserByEmail(request.email());
         if(existingUserOpt.isPresent()){
             if(existingUserOpt.get().isEnabled()){
-                throw new RuntimeException("Email ja cadastrado");
+                throw new EmailAlreadyRegisteredException("Email ja cadastrado");
             }
             else{
                 User existingUser = existingUserOpt.get();
                 existingUser.setName(request.name());
-                existingUser.setEmail(request.email());
+                existingUser.setEmail(request.email().toLowerCase());
                 existingUser.setPassword(passwordEncoder.encode(request.password()));
                 existingUser.setEnabled(false);
                 existingUser.setVerificationCode(generateVerificationCode());
                 existingUser.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
                 sendVerificationEmail(existingUser);
                 userRepository.save(existingUser);
-                return mapToRegResponse(existingUser);
+                return mapToResponse(existingUser);
             }
         }
         User newUser = new User();
         newUser.setName(request.name());
-        newUser.setEmail(request.email());
+        newUser.setEmail(request.email().toLowerCase());
         newUser.setPassword(passwordEncoder.encode(request.password()));
         newUser.setEnabled(false);
         newUser.setVerificationCode(generateVerificationCode());
         newUser.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
         sendVerificationEmail(newUser);
         userRepository.save(newUser);
-        return mapToRegResponse(newUser);
+        return mapToResponse(newUser);
     }
 
 
@@ -97,7 +108,7 @@ public class AuthService implements UserDetailsService {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if(user.getVerificationExpiresAt().isBefore(LocalDateTime.now())) {
-                throw new RuntimeException("Codigo expirado");
+                throw new ExpiredVerificationCodeException("Codigo expirado");
             }
             if(user.getVerificationCode().equals(request.verificationCode())) {
                 user.setEnabled(true);
@@ -106,21 +117,22 @@ public class AuthService implements UserDetailsService {
                 userRepository.save(user);
             }
             else{
-                throw new RuntimeException("Codigo Invalido!");
+                throw new InvalidVerificationCode("Codigo Invalido!");
             }
         }
         else {
-            throw new RuntimeException("Usuario nao encontrado");
+            throw new UsernameNotFoundException("Usuario nao encontrado");
         }
         return new VerifyUserResponse("Usuario verificado com sucesso");
     }
+
 
     public void resendVerificationCode(String email){
         Optional<User> userOpt = userRepository.findUserByEmail(email);
         if(userOpt.isPresent()){
             User user = userOpt.get();
             if(user.isEnabled()){
-                throw new RuntimeException("Usuario ja verificado");
+                throw new UserAlreadyVerified("Usuario ja verificado");
             }
             user.setVerificationCode(generateVerificationCode());
             user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
@@ -128,7 +140,7 @@ public class AuthService implements UserDetailsService {
             userRepository.save(user);
         }
         else{
-            throw new RuntimeException("Usuario nao encontrado");
+            throw new UsernameNotFoundException("Usuario nao encontrado");
         }
     }
 
@@ -157,11 +169,7 @@ public class AuthService implements UserDetailsService {
                 + "</div>"
                 + "</body>"
                 + "</html>";
-        try{
-            emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
-        }catch(MessagingException e){
-            e.printStackTrace();
-        }
+        emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
     }
 
     private String generateVerificationCode(){

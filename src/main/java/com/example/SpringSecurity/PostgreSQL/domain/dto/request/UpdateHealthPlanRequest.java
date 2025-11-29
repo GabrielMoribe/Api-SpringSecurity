@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
+
 public record UpdateHealthPlanRequest(@NotBlank(message = "O nome do plano é obrigatório") String name,
                                       @NotBlank(message = "A operadora é obrigatória") String operator,
                                       @NotBlank(message = "O código da operadora é obrigatório") String operatorCode,
