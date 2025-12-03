@@ -1,0 +1,1 @@
+ALTER TABLE quotations RENAME COLUMN beneficiaries_ages TO beneficiaries_by_age;
