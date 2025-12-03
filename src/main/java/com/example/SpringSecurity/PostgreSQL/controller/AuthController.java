@@ -9,7 +9,6 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserResponse;
 import com.example.SpringSecurity.PostgreSQL.service.AuthService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegUserResponse>> register(@Valid @RequestBody RegUserRequest request) {

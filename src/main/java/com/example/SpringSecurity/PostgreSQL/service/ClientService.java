@@ -4,11 +4,8 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.request.CreateClientRequ
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ClientResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.Client;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
-import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.ClientCreationException;
-import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.ClientNotFoundException;
-import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.ClientRetrievalException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.ClientRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +14,13 @@ import java.util.List;
 @Service
 public class ClientService {
 
-    @Autowired
-    private ClientRepository clientRepository;
-    @Autowired
-    private UserService userService;
+    private final ClientRepository clientRepository;
+    private final UserService userService;
+
+    public ClientService(ClientRepository clientRepository, UserService userService) {
+        this.clientRepository = clientRepository;
+        this.userService = userService;
+    }
 
 
     private ClientResponse mapToResponse(Client client) {
@@ -68,5 +68,32 @@ public class ClientService {
         }
     }
 
+    public ClientResponse updateClient(Long id, CreateClientRequest updatedClient){
+        User broker = userService.findUser();
+        Client client = clientRepository.findByIdAndBroker(id, broker)
+                .orElseThrow(() -> new ClientNotFoundException("Cliente nao encontrado"));
+
+        try{
+            client.setName(updatedClient.name());
+            client.setEmail(updatedClient.email());
+            client.setPhone(updatedClient.phone());
+
+            Client savedClient = clientRepository.save(client);
+            return mapToResponse(savedClient);
+        }catch(ClientUpdateException e){
+            throw new ClientUpdateException("Erro ao atualizar cliente - " + e.getMessage());
+        }
+    }
+
+    public void deleteClient(Long id){
+        User broker = userService.findUser();
+        Client client = clientRepository.findByIdAndBroker(id, broker)
+                .orElseThrow(() -> new ClientNotFoundException("Cliente nao encontrado"));
+        try{
+            clientRepository.delete(client);
+        }catch(ClientDeleteException e){
+            throw new ClientDeleteException("Erro ao deletar cliente - " + e.getMessage());
+        }
+    }
 
 }

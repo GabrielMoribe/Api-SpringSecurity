@@ -10,7 +10,6 @@ import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.ClientN
 import com.example.SpringSecurity.PostgreSQL.repository.ClientRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.HealthPlanRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.QuotationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -20,14 +19,19 @@ import java.util.Map;
 @Service
 public class QuotationService {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private QuotationRepository quotationRepository;
-    @Autowired
-    private ClientRepository clientRepository;
-    @Autowired
-    private HealthPlanRepository healthPlanRepository;
+    private final UserService userService;
+    private final QuotationRepository quotationRepository;
+    private final ClientRepository clientRepository;
+    private final HealthPlanRepository healthPlanRepository;
+
+    public QuotationService(UserService userService , QuotationRepository quotationRepository, ClientRepository clientRepository, HealthPlanRepository healthPlanRepository) {
+        this.userService = userService;
+        this.quotationRepository = quotationRepository;
+        this.clientRepository = clientRepository;
+        this.healthPlanRepository = healthPlanRepository;
+    }
+
+
 
     private QuotationResponse mapToResponse(Quotation quotation) {
         return new QuotationResponse(

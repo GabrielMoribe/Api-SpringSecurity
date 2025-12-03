@@ -10,7 +10,6 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserRespo
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +19,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
@@ -28,17 +26,21 @@ import java.util.Random;
 @Service
 public class AuthService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    @Lazy
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private TokenConfig tokenConfig;
-    @Autowired
-    private EmailService emailService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final TokenConfig tokenConfig;
+    private final EmailService emailService;
+
+    public AuthService(UserRepository userRepository,PasswordEncoder passwordEncoder,@Lazy AuthenticationManager authenticationManager,TokenConfig tokenConfig,EmailService emailService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.tokenConfig = tokenConfig;
+        this.emailService = emailService;
+    }
+
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

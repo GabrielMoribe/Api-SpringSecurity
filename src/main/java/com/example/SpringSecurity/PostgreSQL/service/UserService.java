@@ -9,7 +9,6 @@ import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserRetri
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserUpdateException;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,9 +16,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
 
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -50,6 +52,7 @@ public class UserService {
     public void deleteUser() {
         try{
             User user = getAuthenticatedUser();
+            user.setEnabled(false);
             userRepository.delete(user);
         }catch(UserDeleteException e){
             throw new UserDeleteException("Erro ao deletar usuario - " + e.getMessage());

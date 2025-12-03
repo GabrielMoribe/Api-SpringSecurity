@@ -2,9 +2,7 @@ package com.example.SpringSecurity.PostgreSQL.controller;
 
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.HealthPlanResponse;
-import com.example.SpringSecurity.PostgreSQL.domain.entity.HealthPlan;
 import com.example.SpringSecurity.PostgreSQL.service.HealthPlanService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +14,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/health-plans")
 public class HealthPlanController {
-    @Autowired
-    private HealthPlanService healthPlanService;
+
+    private final HealthPlanService healthPlanService;
+
+    public HealthPlanController(HealthPlanService healthPlanService) {
+        this.healthPlanService = healthPlanService;
+    }
 
     @GetMapping("/all")
     private ResponseEntity<ApiResponse<List<HealthPlanResponse>>> getAllHealthPlans(){

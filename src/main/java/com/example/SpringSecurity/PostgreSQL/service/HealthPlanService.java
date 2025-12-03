@@ -1,19 +1,21 @@
 package com.example.SpringSecurity.PostgreSQL.service;
 
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.UpdateHealthPlanRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.HealthPlanResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.HealthPlan;
 import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.HealthPlanRetrievalException;
 import com.example.SpringSecurity.PostgreSQL.repository.HealthPlanRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class HealthPlanService {
-    @Autowired
-    private HealthPlanRepository healthPlanRepository;
+
+    private final HealthPlanRepository healthPlanRepository;
+
+    public HealthPlanService(HealthPlanRepository healthPlanRepository) {
+        this.healthPlanRepository = healthPlanRepository;
+    }
 
     private HealthPlanResponse mapToResponse(HealthPlan plan) {
         return new HealthPlanResponse(
