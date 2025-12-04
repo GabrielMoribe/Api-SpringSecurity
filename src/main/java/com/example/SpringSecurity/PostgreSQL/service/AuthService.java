@@ -53,23 +53,27 @@ public class AuthService implements UserDetailsService {
     }
 
 
+    public User setUser(User user , RegUserRequest request){
+        user.setName(request.name());
+        user.setEmail(request.email().toLowerCase());
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setEnabled(false);
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
+        return user;
+    }
+
+
 
 
     public LoginResponse login(LoginRequest request) {
 
             String lowerCaseEmail = request.email().toLowerCase();
-//            if(!userRepository.findUserByEmail(lowerCaseEmail).isPresent()){
-//                throw new UsernameNotFoundException("Usuario nao cadastrado");
-//           }
-//            else{
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(lowerCaseEmail, request.password());
                 Authentication authentication = authenticationManager.authenticate(authToken);
                 User user = (User) authentication.getPrincipal();
                 String token = tokenConfig.generateToken(user);
                 return new LoginResponse(token);
-//            }
-
-
     }
 
 
@@ -81,24 +85,14 @@ public class AuthService implements UserDetailsService {
             }
             else{
                 User existingUser = existingUserOpt.get();
-                existingUser.setName(request.name());
-                existingUser.setEmail(request.email().toLowerCase());
-                existingUser.setPassword(passwordEncoder.encode(request.password()));
-                existingUser.setEnabled(false);
-                existingUser.setVerificationCode(generateVerificationCode());
-                existingUser.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
+                existingUser = setUser(existingUser, request);
                 sendVerificationEmail(existingUser);
                 userRepository.save(existingUser);
                 return mapToResponse(existingUser);
             }
         }
         User newUser = new User();
-        newUser.setName(request.name());
-        newUser.setEmail(request.email().toLowerCase());
-        newUser.setPassword(passwordEncoder.encode(request.password()));
-        newUser.setEnabled(false);
-        newUser.setVerificationCode(generateVerificationCode());
-        newUser.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
+        newUser = setUser(newUser, request);
         sendVerificationEmail(newUser);
         userRepository.save(newUser);
         return mapToResponse(newUser);
@@ -149,7 +143,7 @@ public class AuthService implements UserDetailsService {
 
     public void sendVerificationEmail(User user){
         String subject = "Ativacao de Conta.";
-        String verifyUrl = "http://localhost:8080/api/auth/verify?email=" + user.getEmail() + "&code=" + user.getVerificationCode();
+        String verifyUrl = "http://localhost:8080/auth/verify-account?email=" + user.getEmail() + "&code=" + user.getVerificationCode();
         String verificationCode = user.getVerificationCode();
         String htmlMessage = "<!DOCTYPE html>"
                 + "<html lang=\"pt-BR\">"

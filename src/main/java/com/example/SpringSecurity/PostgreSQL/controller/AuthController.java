@@ -11,10 +11,7 @@ import com.example.SpringSecurity.PostgreSQL.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,6 +32,15 @@ public class AuthController {
 
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<VerifyUserResponse>> verify(@Valid @RequestBody VerifyUserRequest request) {
+        VerifyUserResponse verify = authService.verifyUser(request);
+        ApiResponse<VerifyUserResponse> response = ApiResponse.success(verify);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    @GetMapping("/verify-account")
+    public ResponseEntity<ApiResponse<VerifyUserResponse>> verifyAccount(
+            @RequestParam("email") String email,
+            @RequestParam("code") String code) {
+        VerifyUserRequest request = new VerifyUserRequest(email, code);
         VerifyUserResponse verify = authService.verifyUser(request);
         ApiResponse<VerifyUserResponse> response = ApiResponse.success(verify);
         return ResponseEntity.status(HttpStatus.OK).body(response);
