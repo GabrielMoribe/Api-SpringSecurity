@@ -7,6 +7,8 @@ import com.example.SpringSecurity.PostgreSQL.domain.entity.HealthPlan;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.Quotation;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.ClientNotFoundException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.HealthPlanNotFoundException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.quotationExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.ClientRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.HealthPlanRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.QuotationRepository;
@@ -50,7 +52,7 @@ public class QuotationService {
         Client client = clientRepository.findByIdAndBroker(request.clientId(), broker)
                 .orElseThrow(() -> new ClientNotFoundException("Cliente não encontrado"));
         HealthPlan plan = healthPlanRepository.findById(request.healthPlanId())
-                .orElseThrow(() -> new RuntimeException("Plano não encontrado")); // Criar excecao
+                .orElseThrow(() -> new QuotationNotFoundException("Plano não encontrado"));
 
         BigDecimal totalFinalPrice = calculateTotalFinalPrice(plan, request.beneficiariesByAge());
         Quotation quotation = new Quotation();
@@ -58,8 +60,13 @@ public class QuotationService {
         quotation.setHealthPlan(plan);
         quotation.setFinalPrice(totalFinalPrice);
         quotation.setBeneficiariesByAge(request.beneficiariesByAge());
-        Quotation savedQuotation = quotationRepository.save(quotation);
-        return mapToResponse(savedQuotation);
+
+        try{
+            Quotation savedQuotation = quotationRepository.save(quotation);
+            return mapToResponse(savedQuotation);
+        }catch(Exception e ){
+            throw new QuotationCreationException("Erro ao criar cotação: " + e.getMessage());
+        }
     }
 
 
@@ -74,7 +81,7 @@ public class QuotationService {
     public QuotationResponse getQuotationById(Long id) {
         User broker = userService.findUser();
         Quotation quotation = quotationRepository.findByIdAndClient_Broker(id, broker)
-                .orElseThrow(() -> new RuntimeException("Cotação não encontrada"));  // Criar excecao
+                .orElseThrow(() -> new QuotationNotFoundException("Cotação não encontrada"));
         return mapToResponse(quotation);
     }
 
@@ -83,19 +90,25 @@ public class QuotationService {
         User broker = userService.findUser();
 
         Quotation existingQuotation = quotationRepository.findByIdAndClient_Broker(id, broker)
-                .orElseThrow(() -> new RuntimeException("Cotação não encontrada"));  // Criar excecao
+                .orElseThrow(() -> new QuotationNotFoundException("Cotação não encontrada"));
         Client client = clientRepository.findByIdAndBroker(request.clientId(), broker)
-                .orElseThrow(() -> new ClientNotFoundException("Cliente não encontrado"));  // Criar excecao
+                .orElseThrow(() -> new ClientNotFoundException("Cliente não encontrado"));
         HealthPlan plan = healthPlanRepository.findById(request.healthPlanId())
-                .orElseThrow(() -> new RuntimeException("Plano não encontrado"));  // Criar excecao
+                .orElseThrow(() -> new HealthPlanNotFoundException("Plano não encontrado"));
 
         BigDecimal totalFinalPrice = calculateTotalFinalPrice(plan, request.beneficiariesByAge());
         existingQuotation.setClient(client);
         existingQuotation.setHealthPlan(plan);
         existingQuotation.setFinalPrice(totalFinalPrice);
         existingQuotation.setBeneficiariesByAge(request.beneficiariesByAge());
-        Quotation updatedQuotation = quotationRepository.save(existingQuotation);
-        return mapToResponse(updatedQuotation);
+
+        try{
+            Quotation updatedQuotation = quotationRepository.save(existingQuotation);
+            return mapToResponse(updatedQuotation);
+        }catch(Exception e ){
+            throw new QuotationUpdateException("Erro ao atualizar cotação: " + e.getMessage());
+        }
+
     }
 
 
@@ -103,11 +116,11 @@ public class QuotationService {
         User broker = userService.findUser();
 
         Quotation quotation = quotationRepository.findByIdAndClient_Broker(id, broker)
-                .orElseThrow(() -> new RuntimeException("Cotação não encontrada."));  // Criar excecao
+                .orElseThrow(() -> new QuotationNotFoundException("Cotação não encontrada."));
         try {
             quotationRepository.delete(quotation);
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao deletar cotação: " + e.getMessage()); // Criar excecao
+            throw new QuotationDeleteException("Erro ao deletar cotação: " + e.getMessage());
         }
     }
 
@@ -130,7 +143,7 @@ public class QuotationService {
                         .multiply(BigDecimal.valueOf(quantity));
                 totalFinalPrice = totalFinalPrice.add(priceForThisRange);
             } else {
-                throw new RuntimeException("Faixa etária inválida para este plano: " + ageRange); // Criar excecao
+                throw new InvalidAgeRangeException("Faixa etária inválida para este plano: " + ageRange);
             }
         }
         return totalFinalPrice;

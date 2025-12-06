@@ -3,7 +3,9 @@ package com.example.SpringSecurity.PostgreSQL.exceptions;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
 import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.*;
+import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.HealthPlanNotFoundException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.HealthPlanRetrievalException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.quotationExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserDeleteException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserNotAuthenticatedException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserRetrievalException;
@@ -105,6 +107,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response , HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    //Plano de saude nao encontrado
+    @ExceptionHandler(HealthPlanNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleHealthPlanNotFoundException(HealthPlanNotFoundException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.NOT_FOUND);
+    }
+
 
     //==================EXCEPTION DE USERS==================
 
@@ -137,13 +146,47 @@ public class GlobalExceptionHandler {
 
     //==================EXCEPTIONS DE COTACAO==================
 
+    //Cotacao nao encontrada
+    @ExceptionHandler(QuotationNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleQuotationNotFoundException(QuotationNotFoundException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.NOT_FOUND);
+    }
+
+    //Erro ao deletar cotacao
+    @ExceptionHandler(QuotationDeleteException.class)
+    public ResponseEntity<ApiResponse<Object>> handleQuotationDeleteException(QuotationDeleteException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //Faixa etaria invalida ao calcular cotacao
+    @ExceptionHandler(InvalidAgeRangeException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidAgeRangeException(InvalidAgeRangeException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.BAD_REQUEST);
+    }
+
+    //Erro ao criar cotacao
+    @ExceptionHandler(QuotationCreationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleQuotationCreationException(QuotationCreationException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //Erro ao atualizar cotacao
+    @ExceptionHandler(QuotationUpdateException.class)
+    public ResponseEntity<ApiResponse<Object>> handleQuotationUpdateException(QuotationUpdateException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
 
     //==================EXCEPTION GENERICA==================
 
     //Erros de validacao de argumentos (ex: campos obrigatorios faltando)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex){
         String errorMsg = ex.getBindingResult().getFieldErrors().stream()
                 .map(e -> e.getDefaultMessage())
                 .collect(Collectors.joining("; "));
@@ -153,7 +196,7 @@ public class GlobalExceptionHandler {
     //Credenciais invalidas ao tentar logar
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Object>> handleBadCredentialsException(BadCredentialsException ex){
-        ApiResponse<Object> response = ApiResponse.error("Credenciais invalidas.");
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(response , HttpStatus.UNAUTHORIZED);
     }
 
