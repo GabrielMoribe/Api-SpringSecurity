@@ -1,9 +1,7 @@
 package com.example.SpringSecurity.PostgreSQL.service;
 
 import com.example.SpringSecurity.PostgreSQL.config.TokenConfig;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.LoginRequest;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.RegUserRequest;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.VerifyUserRequest;
+import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.LoginResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserResponse;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class AuthService implements UserDetailsService {
@@ -167,6 +166,54 @@ public class AuthService implements UserDetailsService {
                 + "</html>";
         emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
     }
+
+
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        Optional<User> userOpt = userRepository.findUserByEmail(request.email());
+
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            String token = UUID.randomUUID().toString();
+            user.setPasswordResetToken(token);
+            user.setPasswordResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+            userRepository.save(user);
+            sendResetPasswordEmail(user, token);
+        }else{
+           throw new UsernameNotFoundException("Usuario nao encontrado");
+        }
+    }
+    private void sendResetPasswordEmail(User user, String token) {
+        String subject = "Redefinição de Senha";
+        String resetUrl = "http://localhost:8080/auth/reset-password?token=" + token;
+
+        String htmlMessage = "<!DOCTYPE html>"
+                + "<html><body>"
+                + "<h2>Redefinição de Senha</h2>"
+                + "<p>Olá " + user.getName() + ",</p>"
+                + "<p>Recebemos uma solicitação para redefinir sua senha.</p>"
+                + "<p>Clique no link abaixo para criar uma nova senha:</p>"
+                + "<a href=\"" + resetUrl + "\">Redefinir Minha Senha</a>"
+                + "<p>Este link expira em 15 minutos.</p>"
+                + "</body></html>";
+
+        emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByPasswordResetToken(request.token())
+                .orElseThrow(() -> new RuntimeException("Token de redefinição de senha inválido.")); //criar excecao personalizada
+
+        if (user.getPasswordResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token expirado. Solicite uma nova redefinição."); //criar excecao personalizada
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiresAt(null);
+        userRepository.save(user);
+    }
+
+
 
     private String generateVerificationCode(){
         Random random = new Random();

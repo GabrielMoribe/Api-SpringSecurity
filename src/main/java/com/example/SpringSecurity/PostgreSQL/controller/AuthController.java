@@ -1,12 +1,7 @@
 package com.example.SpringSecurity.PostgreSQL.controller;
 
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.LoginRequest;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.RegUserRequest;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.VerifyUserRequest;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.response.LoginResponse;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserResponse;
+import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
+import com.example.SpringSecurity.PostgreSQL.domain.dto.response.*;
 import com.example.SpringSecurity.PostgreSQL.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,7 +24,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<VerifyUserResponse>> verify(@Valid @RequestBody VerifyUserRequest request) {
         VerifyUserResponse verify = authService.verifyUser(request);
@@ -46,11 +40,24 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse login = authService.login(request);
         ApiResponse<LoginResponse> response = ApiResponse.success(login);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        ApiResponse<String> response = ApiResponse.success("Um email foi enviado para " + request.email() + " com instruções para redefinir sua senha.");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        ApiResponse<String> response = ApiResponse.success("Senha redefinida com sucesso.");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

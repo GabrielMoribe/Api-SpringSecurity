@@ -39,10 +39,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/verify-account").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
-                        // Tratamento para erro 401 (Não autenticado / Token inválido)
+
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -50,7 +52,7 @@ public class SecurityConfig {
                             ApiResponse<Void> apiResponse = ApiResponse.error("Acesso não autorizado: Faça login para continuar.");
                             new ObjectMapper().writeValue(response.getOutputStream(), apiResponse);
                         })
-                        // Tratamento para erro 403 (Sem permissão / Forbidden)
+
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
