@@ -6,6 +6,8 @@ import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.HealthPlanNotFoundException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.HealthPlanRetrievalException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.quotationExceptions.*;
+import com.example.SpringSecurity.PostgreSQL.exceptions.refreshTokenExceptions.InvalidRefreshTokenException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.refreshTokenExceptions.RefreshTokenNotFoundException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserDeleteException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserNotAuthenticatedException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserRetrievalException;
@@ -58,6 +60,12 @@ public class GlobalExceptionHandler {
     //Codigo de verificacao invalido ao tentar verificar usuario
     @ExceptionHandler(InvalidVerificationCode.class)
     public ResponseEntity<ApiResponse<Object>> handleInvalidVerificationCodeException(InvalidVerificationCode ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.BAD_REQUEST);
+    }
+    //Token para reset de senha invalido
+    @ExceptionHandler(InvalidPassworResetToken.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidPassworResetToken(InvalidPassworResetToken ex){
         ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(response , HttpStatus.BAD_REQUEST);
     }
@@ -179,6 +187,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleQuotationUpdateException(QuotationUpdateException ex){
         ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(response , HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //====================Refresh Token exceptions=================
+
+    @ExceptionHandler(RefreshTokenNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.UNAUTHORIZED);
     }
 
 

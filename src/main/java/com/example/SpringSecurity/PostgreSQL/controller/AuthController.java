@@ -3,7 +3,6 @@ package com.example.SpringSecurity.PostgreSQL.controller;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.*;
 import com.example.SpringSecurity.PostgreSQL.service.AuthService;
-import com.example.SpringSecurity.PostgreSQL.service.RefreshTokenService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

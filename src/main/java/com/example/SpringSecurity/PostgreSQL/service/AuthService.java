@@ -18,9 +18,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -55,31 +56,29 @@ public class AuthService implements UserDetailsService {
     }
 
 
-    public User setUser(User user , RegUserRequest request){
+    private void setUser(User user , RegUserRequest request){
         user.setName(request.name());
         user.setEmail(request.email().toLowerCase());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setEnabled(false);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
-        return user;
     }
 
 
 
 
     public LoginResponse login(LoginRequest request) {
-
-            String lowerCaseEmail = request.email().toLowerCase();
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(lowerCaseEmail, request.password());
-                Authentication authentication = authenticationManager.authenticate(authToken);
-                User user = (User) authentication.getPrincipal();
-                String acessToken = tokenConfig.generateToken(user);
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
-                return new LoginResponse(acessToken , refreshToken.getRefreshToken());
+        String lowerCaseEmail = request.email().toLowerCase();
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(lowerCaseEmail, request.password());
+        Authentication authentication = authenticationManager.authenticate(authToken);
+        User user = (User) authentication.getPrincipal();
+        String acessToken = tokenConfig.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
+        return new LoginResponse(acessToken , refreshToken.getRefreshToken());
     }
 
-
+    @Transactional
     public RegUserResponse register(RegUserRequest request) {
         Optional<User> existingUserOpt = userRepository.findUserByEmail(request.email());
         if(existingUserOpt.isPresent()){
@@ -88,20 +87,21 @@ public class AuthService implements UserDetailsService {
             }
             else{
                 User existingUser = existingUserOpt.get();
-                existingUser = setUser(existingUser, request);
+                setUser(existingUser, request);
                 sendVerificationEmail(existingUser);
                 userRepository.save(existingUser);
                 return mapToResponse(existingUser);
             }
         }
         User newUser = new User();
-        newUser = setUser(newUser, request);
+        setUser(newUser, request);
         sendVerificationEmail(newUser);
         userRepository.save(newUser);
         return mapToResponse(newUser);
     }
 
 
+    @Transactional
     public VerifyUserResponse verifyUser(VerifyUserRequest request) {
         Optional<User> userOpt = userRepository.findUserByEmail(request.email());
         if (userOpt.isPresent()) {
@@ -125,7 +125,7 @@ public class AuthService implements UserDetailsService {
         return new VerifyUserResponse("Usuario verificado com sucesso");
     }
 
-
+    @Transactional
     public void resendVerificationCode(String email){
         Optional<User> userOpt = userRepository.findUserByEmail(email);
         if(userOpt.isPresent()){
@@ -177,7 +177,7 @@ public class AuthService implements UserDetailsService {
     }
 
 
-
+    @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
         Optional<User> userOpt = userRepository.findUserByEmail(request.email());
 
@@ -209,12 +209,13 @@ public class AuthService implements UserDetailsService {
         emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
     }
 
+    @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findByPasswordResetToken(request.token())
-                .orElseThrow(() -> new RuntimeException("Token de redefinição de senha inválido.")); //criar excecao personalizada
+                .orElseThrow(() -> new InvalidPassworResetToken("Token de redefinição de senha inválido."));
 
         if (user.getPasswordResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Token expirado. Solicite uma nova redefinição."); //criar excecao personalizada
+            throw new InvalidPassworResetToken("Token expirado. Solicite uma nova redefinição.");
         }
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         user.setPasswordResetToken(null);
@@ -225,7 +226,8 @@ public class AuthService implements UserDetailsService {
 
 
     private String generateVerificationCode(){
-        Random random = new Random();
+        //Random random = new Random();
+        SecureRandom random = new SecureRandom();
         int code = random.nextInt(900000) + 100000;
         return String.valueOf(code);
     }

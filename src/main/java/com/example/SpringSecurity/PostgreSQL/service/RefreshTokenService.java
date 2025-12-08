@@ -2,6 +2,8 @@ package com.example.SpringSecurity.PostgreSQL.service;
 
 import com.example.SpringSecurity.PostgreSQL.domain.entity.RefreshToken;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
+import com.example.SpringSecurity.PostgreSQL.exceptions.refreshTokenExceptions.InvalidRefreshTokenException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.refreshTokenExceptions.RefreshTokenNotFoundException;
 import com.example.SpringSecurity.PostgreSQL.repository.RefreshTokenRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -43,11 +45,11 @@ public class RefreshTokenService {
     public RefreshToken verifyToken(String refreshToken) {
         Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(refreshToken);
         if(refreshTokenOpt.isEmpty()) {
-            throw new RuntimeException("token nao encontrado"); //criar excecao
+            throw new RefreshTokenNotFoundException("token nao encontrado");
         }
         if(refreshTokenOpt.get().getExpiresAt().isBefore(LocalDateTime.now())) {
             refreshTokenRepository.deleteByRefreshToken(refreshTokenOpt.get().getRefreshToken());
-            throw new RuntimeException("token expirado");
+            throw new InvalidRefreshTokenException("token expirado");
         }
         return refreshTokenOpt.get();
     }

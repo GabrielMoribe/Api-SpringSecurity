@@ -6,8 +6,8 @@ import com.example.SpringSecurity.PostgreSQL.domain.entity.Client;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.exceptions.clientExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.ClientRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,23 +31,23 @@ public class ClientService {
         );
     }
 
+    @Transactional
     public ClientResponse createClient(CreateClientRequest newClient) {
         User broker = userService.findUser();
-        if (broker == null) throw new UsernameNotFoundException("Usuario " + newClient.name() + " - " + newClient.email() + " nao encontrado.");
+        Client client = new Client();
+        client.setName(newClient.name());
+        client.setEmail(newClient.email());
+        client.setPhone(newClient.phone());
+        client.setBroker(broker);
         try{
-            Client client = new Client();
-            client.setName(newClient.name());
-            client.setEmail(newClient.email());
-            client.setPhone(newClient.phone());
-            client.setBroker(broker);
             Client savedClient = clientRepository.save(client);
             return mapToResponse(savedClient);
-        }catch(ClientCreationException e){
+        }catch(Exception e){
             throw new ClientCreationException("Erro ao criar cliente - " + e.getMessage());
         }
     }
 
-
+    @Transactional(readOnly = true)
     public ClientResponse getClientById(Long id){
         User broker = userService.findUser();
         Client client = clientRepository.findByIdAndBroker(id, broker)
@@ -55,7 +55,7 @@ public class ClientService {
         return mapToResponse(client);
     }
 
-
+    @Transactional(readOnly = true)
     public List<ClientResponse> getAllClients(){
         try{
             User broker = userService.findUser();
@@ -63,35 +63,36 @@ public class ClientService {
                     .stream()
                     .map(this::mapToResponse)
                     .toList();
-        }catch(ClientRetrievalException e){
+        }catch(Exception e){
             throw new ClientRetrievalException("Erro ao recuperar clientes - " + e.getMessage());
         }
     }
 
+    @Transactional
     public ClientResponse updateClient(Long id, CreateClientRequest updatedClient){
         User broker = userService.findUser();
         Client client = clientRepository.findByIdAndBroker(id, broker)
                 .orElseThrow(() -> new ClientNotFoundException("Cliente nao encontrado"));
 
+        client.setName(updatedClient.name());
+        client.setEmail(updatedClient.email());
+        client.setPhone(updatedClient.phone());
         try{
-            client.setName(updatedClient.name());
-            client.setEmail(updatedClient.email());
-            client.setPhone(updatedClient.phone());
-
             Client savedClient = clientRepository.save(client);
             return mapToResponse(savedClient);
-        }catch(ClientUpdateException e){
+        }catch(Exception e){
             throw new ClientUpdateException("Erro ao atualizar cliente - " + e.getMessage());
         }
     }
 
+    @Transactional
     public void deleteClient(Long id){
         User broker = userService.findUser();
         Client client = clientRepository.findByIdAndBroker(id, broker)
                 .orElseThrow(() -> new ClientNotFoundException("Cliente nao encontrado"));
         try{
             clientRepository.delete(client);
-        }catch(ClientDeleteException e){
+        }catch(Exception e){
             throw new ClientDeleteException("Erro ao deletar cliente - " + e.getMessage());
         }
     }

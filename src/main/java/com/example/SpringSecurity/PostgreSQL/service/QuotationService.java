@@ -13,6 +13,7 @@ import com.example.SpringSecurity.PostgreSQL.repository.ClientRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.HealthPlanRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.QuotationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -46,13 +47,14 @@ public class QuotationService {
     }
 
 
+    @Transactional
     public QuotationResponse createQuotation(QuotationRequest request) {
         User broker = userService.findUser();
 
         Client client = clientRepository.findByIdAndBroker(request.clientId(), broker)
                 .orElseThrow(() -> new ClientNotFoundException("Cliente não encontrado"));
         HealthPlan plan = healthPlanRepository.findById(request.healthPlanId())
-                .orElseThrow(() -> new QuotationNotFoundException("Plano não encontrado"));
+                .orElseThrow(() -> new HealthPlanNotFoundException("Plano não encontrado"));
 
         BigDecimal totalFinalPrice = calculateTotalFinalPrice(plan, request.beneficiariesByAge());
         Quotation quotation = new Quotation();
@@ -70,7 +72,7 @@ public class QuotationService {
     }
 
 
-
+    @Transactional(readOnly = true)
     public List<QuotationResponse> getAllQuotations() {
         User broker = userService.findUser();
         return quotationRepository.findByClient_Broker(broker)
@@ -78,6 +80,7 @@ public class QuotationService {
                 .map(quotation -> mapToResponse(quotation))
                 .toList();
     }
+    @Transactional(readOnly = true)
     public QuotationResponse getQuotationById(Long id) {
         User broker = userService.findUser();
         Quotation quotation = quotationRepository.findByIdAndClient_Broker(id, broker)
@@ -86,6 +89,7 @@ public class QuotationService {
     }
 
 
+    @Transactional
     public QuotationResponse updateQuotation(Long id, QuotationRequest request) {
         User broker = userService.findUser();
 
@@ -111,7 +115,7 @@ public class QuotationService {
 
     }
 
-
+    @Transactional
     public void deleteQuotation(Long id) {
         User broker = userService.findUser();
 

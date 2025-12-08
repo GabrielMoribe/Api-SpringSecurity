@@ -5,6 +5,7 @@ import com.example.SpringSecurity.PostgreSQL.domain.entity.HealthPlan;
 import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.HealthPlanRetrievalException;
 import com.example.SpringSecurity.PostgreSQL.repository.HealthPlanRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,13 +30,14 @@ public class HealthPlanService {
     }
 
 
+    @Transactional(readOnly = true)
     public List<HealthPlanResponse> findAll() {
         try{
             return healthPlanRepository.findAll()
                     .stream()
                     .map(plans-> mapToResponse(plans))
                     .toList();
-        } catch (HealthPlanRetrievalException e) {
+        } catch (Exception e) {
             throw new HealthPlanRetrievalException("Erro ao recuperar planos de saude - " + e.getMessage());
         }
 

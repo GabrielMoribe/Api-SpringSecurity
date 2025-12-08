@@ -6,7 +6,6 @@ import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.EmailAlreadyRegisteredException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserDeleteException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserNotAuthenticatedException;
-import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserRetrievalException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserUpdateException;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -23,7 +22,6 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof JWTUserData userData) {
@@ -33,30 +31,30 @@ public class UserService {
         throw new UserNotAuthenticatedException("Usuario nao autenticado");
     }
 
-
+    @Transactional
     public User updateUser(UpdateUserRequest request) {
+        User user = getAuthenticatedUser();
+        if (request.name() != null && !request.name().isEmpty()) {
+            user.setName(request.name());
+        }
+        if (request.email() != null && !request.email().isEmpty()) {
+            if (!request.email().equals(user.getEmail()) && userRepository.findUserByEmail(request.email()).isPresent()) {
+                throw new EmailAlreadyRegisteredException("Este email já está em uso.");
+            }
+            user.setEmail(request.email());
+        }
         try{
-            User user = getAuthenticatedUser();
-
-            if (request.name() != null && !request.name().isEmpty()) {
-                user.setName(request.name());
-            }
-            if (request.email() != null && !request.email().isEmpty()) {
-                if (!request.email().equals(user.getEmail()) && userRepository.findUserByEmail(request.email()).isPresent()) {
-                    throw new EmailAlreadyRegisteredException("Este email já está em uso.");
-                }
-                user.setEmail(request.email());
-            }
             return userRepository.save(user);
         }catch(Exception e){
             throw new UserUpdateException("Erro ao atualizar usuario - " + e.getMessage());
         }
     }
 
+    @Transactional
     public void deleteUser() {
+        User user = getAuthenticatedUser();
+        //user.setEnabled(false);
         try{
-            User user = getAuthenticatedUser();
-            user.setEnabled(false);
             userRepository.delete(user);
         }catch(Exception e){
             throw new UserDeleteException("Erro ao deletar usuario - " + e.getMessage());
@@ -64,10 +62,6 @@ public class UserService {
     }
 
     public User findUser() {
-        try{
-            return getAuthenticatedUser();
-        }catch (Exception e){
-            throw new UserRetrievalException("Erro ao recuperar usuario - " + e.getMessage());
-        }
+        return getAuthenticatedUser();
     }
 }
