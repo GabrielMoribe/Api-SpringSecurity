@@ -3,6 +3,7 @@ package com.example.SpringSecurity.PostgreSQL.service;
 import com.example.SpringSecurity.PostgreSQL.config.JWTUserData;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.UpdateUserRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
+import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.EmailAlreadyRegisteredException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserDeleteException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserNotAuthenticatedException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserRetrievalException;
@@ -32,7 +33,7 @@ public class UserService {
         throw new UserNotAuthenticatedException("Usuario nao autenticado");
     }
 
-    @Transactional
+
     public User updateUser(UpdateUserRequest request) {
         try{
             User user = getAuthenticatedUser();
@@ -41,10 +42,13 @@ public class UserService {
                 user.setName(request.name());
             }
             if (request.email() != null && !request.email().isEmpty()) {
+                if (!request.email().equals(user.getEmail()) && userRepository.findUserByEmail(request.email()).isPresent()) {
+                    throw new EmailAlreadyRegisteredException("Este email já está em uso.");
+                }
                 user.setEmail(request.email());
             }
             return userRepository.save(user);
-        }catch(UserUpdateException e){
+        }catch(Exception e){
             throw new UserUpdateException("Erro ao atualizar usuario - " + e.getMessage());
         }
     }
@@ -54,7 +58,7 @@ public class UserService {
             User user = getAuthenticatedUser();
             user.setEnabled(false);
             userRepository.delete(user);
-        }catch(UserDeleteException e){
+        }catch(Exception e){
             throw new UserDeleteException("Erro ao deletar usuario - " + e.getMessage());
         }
     }
@@ -62,7 +66,7 @@ public class UserService {
     public User findUser() {
         try{
             return getAuthenticatedUser();
-        }catch (UserRetrievalException e){
+        }catch (Exception e){
             throw new UserRetrievalException("Erro ao recuperar usuario - " + e.getMessage());
         }
     }

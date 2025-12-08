@@ -3,6 +3,7 @@ package com.example.SpringSecurity.PostgreSQL.controller;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.*;
 import com.example.SpringSecurity.PostgreSQL.service.AuthService;
+import com.example.SpringSecurity.PostgreSQL.service.RefreshTokenService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,8 +63,8 @@ public class AuthController {
     }
 
     @PostMapping("/access-token")
-    public ResponseEntity<ApiResponse<String>> refreshToken(@Valid @RequestBody String refreshToken) {
-        String newAccessToken  = authService.newAccessToken(refreshToken);
+    public ResponseEntity<ApiResponse<String>> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshToken) {
+        String newAccessToken  = authService.newAccessToken(refreshToken.refreshToken());
         ApiResponse<String> response = ApiResponse.success(newAccessToken);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

@@ -4,6 +4,7 @@ import com.example.SpringSecurity.PostgreSQL.domain.entity.RefreshToken;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.repository.RefreshTokenRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +22,14 @@ public class RefreshTokenService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public RefreshToken createRefreshToken(String email) {
         Optional<User> userOpt = userRepository.findUserByEmail(email);
         if(userOpt.isEmpty()) {
             throw new UsernameNotFoundException("Usuario nao encontrado");
         }
         else{
+            refreshTokenRepository.deleteByUser(userOpt.get());
             RefreshToken refreshToken = new RefreshToken();
             refreshToken.setUser(userOpt.get());
             refreshToken.setRefreshToken(UUID.randomUUID().toString());
@@ -36,6 +39,7 @@ public class RefreshTokenService {
     }
 
 
+    @Transactional
     public RefreshToken verifyToken(String refreshToken) {
         Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(refreshToken);
         if(refreshTokenOpt.isEmpty()) {
