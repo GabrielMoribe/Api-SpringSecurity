@@ -60,4 +60,11 @@ public class AuthController {
         ApiResponse<String> response = ApiResponse.success("Senha redefinida com sucesso.");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PostMapping("/access-token")
+    public ResponseEntity<ApiResponse<String>> refreshToken(@Valid @RequestBody String refreshToken) {
+        String newAccessToken  = authService.newAccessToken(refreshToken);
+        ApiResponse<String> response = ApiResponse.success(newAccessToken);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

@@ -5,6 +5,7 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.LoginResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserResponse;
+import com.example.SpringSecurity.PostgreSQL.domain.entity.RefreshToken;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
@@ -30,13 +31,15 @@ public class AuthService implements UserDetailsService {
     private final AuthenticationManager authenticationManager;
     private final TokenConfig tokenConfig;
     private final EmailService emailService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserRepository userRepository,PasswordEncoder passwordEncoder,@Lazy AuthenticationManager authenticationManager,TokenConfig tokenConfig,EmailService emailService) {
+    public AuthService(UserRepository userRepository,PasswordEncoder passwordEncoder,@Lazy AuthenticationManager authenticationManager,TokenConfig tokenConfig,EmailService emailService,RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenConfig = tokenConfig;
         this.emailService = emailService;
+        this.refreshTokenService = refreshTokenService;
     }
 
 
@@ -71,8 +74,9 @@ public class AuthService implements UserDetailsService {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(lowerCaseEmail, request.password());
                 Authentication authentication = authenticationManager.authenticate(authToken);
                 User user = (User) authentication.getPrincipal();
-                String token = tokenConfig.generateToken(user);
-                return new LoginResponse(token);
+                String acessToken = tokenConfig.generateToken(user);
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
+                return new LoginResponse(acessToken , refreshToken.getRefreshToken());
     }
 
 
@@ -139,6 +143,11 @@ public class AuthService implements UserDetailsService {
         }
     }
 
+    public String newAccessToken(String refreshToken){
+        RefreshToken validRefToken = refreshTokenService.verifyToken(refreshToken);
+        User user = validRefToken.getUser();
+        return tokenConfig.generateToken(user);
+    }
 
     public void sendVerificationEmail(User user){
         String subject = "Ativacao de Conta.";
