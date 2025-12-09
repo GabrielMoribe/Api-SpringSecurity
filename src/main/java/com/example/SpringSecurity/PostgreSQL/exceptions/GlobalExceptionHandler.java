@@ -8,10 +8,7 @@ import com.example.SpringSecurity.PostgreSQL.exceptions.healthPlanExceptions.Hea
 import com.example.SpringSecurity.PostgreSQL.exceptions.quotationExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.exceptions.refreshTokenExceptions.InvalidRefreshTokenException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.refreshTokenExceptions.RefreshTokenNotFoundException;
-import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserDeleteException;
-import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserNotAuthenticatedException;
-import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserRetrievalException;
-import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserUpdateException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -149,7 +146,12 @@ public class GlobalExceptionHandler {
         ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(response , HttpStatus.UNAUTHORIZED);
     }
-
+    //Token de alteracao de email invalido
+    @ExceptionHandler(InvalidEmailChangeTokenException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidEmailChangeTokenException(InvalidEmailChangeTokenException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.BAD_REQUEST);
+    }
 
 
     //==================EXCEPTIONS DE COTACAO==================

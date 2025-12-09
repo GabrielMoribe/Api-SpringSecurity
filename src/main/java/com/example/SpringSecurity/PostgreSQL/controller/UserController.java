@@ -1,5 +1,6 @@
 package com.example.SpringSecurity.PostgreSQL.controller;
 
+import com.example.SpringSecurity.PostgreSQL.domain.dto.request.ChangeEmailRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.UpdateUserRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UpdateUserResponse;
@@ -33,10 +34,26 @@ public class UserController {
         ApiResponse<UpdateUserResponse> response = ApiResponse.success(new UpdateUserResponse(updatedUser.getName(), updatedUser.getEmail()));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PostMapping("/profile/change-email")
+    public ResponseEntity<ApiResponse<String>> changeEmail(@Valid @RequestBody ChangeEmailRequest changeEmailRequest) {
+        userService.changeEmail(changeEmailRequest.newEmail());
+        ApiResponse<String> response = ApiResponse.success("Enviamos um email de confirmacao");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    @GetMapping("/profile/change-email/confirm")
+    public ResponseEntity<ApiResponse<String>> verifyNewEmail(
+            @RequestParam("token") String token){
+        userService.confirmEmailChange(token);
+        ApiResponse<String> response = ApiResponse.success("Email alterado com sucesso!");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
     @DeleteMapping("/profile/delete")
-    public ResponseEntity<ApiResponse<Void>> deleteUserProfile() {
+    public ResponseEntity<ApiResponse<String>> deleteUserProfile() {
         userService.deleteUser();
-        ApiResponse<Void> response = ApiResponse.success(null);
+        ApiResponse<String> response = ApiResponse.success("Usuario deletado com sucesso");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

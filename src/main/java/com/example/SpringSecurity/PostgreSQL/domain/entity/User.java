@@ -49,6 +49,15 @@ public class User implements UserDetails {
     @Column(name = "password_reset_token_expires_at")
     private LocalDateTime passwordResetTokenExpiresAt;
 
+    @Column(name="new_email_placeholder")
+    private String newEmailPlaceholder;
+
+    @Column(name="new_email_token ")
+    private String newEmailToken;
+
+    @Column(name = "new_email_token_expires_at")
+    private LocalDateTime newEmailTokenExpiresAt;
+
 
 
     @Override
