@@ -39,6 +39,12 @@ public class AuthController {
         ApiResponse<VerifyUserResponse> response = ApiResponse.success(verify);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+    @PostMapping("/verify-account/resend")
+    public ResponseEntity<ApiResponse<String>> resendVerificationCode(@Valid @RequestBody ResendVerificatioCodeRequest request) {
+        authService.resendVerificationCode(request.email());
+        ApiResponse<String> response = ApiResponse.success("Um novo codigo de verificacao foi enviado para " + request.email());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {

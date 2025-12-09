@@ -66,6 +66,12 @@ public class GlobalExceptionHandler {
         ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(response , HttpStatus.BAD_REQUEST);
     }
+    //Login com conta nao verificada
+    @ExceptionHandler(UserNotVerifiedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUserNotVerifiedException(UserNotVerifiedException ex){
+        ApiResponse<Object> response = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(response , HttpStatus.BAD_REQUEST);
+    }
 
 
     //==================EXCEPTIONS DE CLIENTE==================

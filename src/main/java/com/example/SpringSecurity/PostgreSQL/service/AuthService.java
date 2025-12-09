@@ -11,6 +11,8 @@ import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -71,11 +73,18 @@ public class AuthService implements UserDetailsService {
     public LoginResponse login(LoginRequest request) {
         String lowerCaseEmail = request.email().toLowerCase();
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(lowerCaseEmail, request.password());
-        Authentication authentication = authenticationManager.authenticate(authToken);
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(authToken);
+        } catch (DisabledException e) {
+            throw new UserNotVerifiedException("Sua conta ainda não foi verificada. Por favor, verifique seu e-mail ou cadastre-se novamente.");
+        } catch (BadCredentialsException e) {
+            throw new BadCredentialsException("Email ou senha incorretos.");
+        }
         User user = (User) authentication.getPrincipal();
         String acessToken = tokenConfig.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
-        return new LoginResponse(acessToken , refreshToken.getRefreshToken());
+        return new LoginResponse(acessToken, refreshToken.getRefreshToken());
     }
 
     @Transactional
