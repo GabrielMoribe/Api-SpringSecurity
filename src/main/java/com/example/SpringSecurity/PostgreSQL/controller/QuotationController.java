@@ -7,6 +7,7 @@ import com.example.SpringSecurity.PostgreSQL.service.QuotationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class QuotationController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<List<QuotationResponse>>> getAllQuotations(){
         List<QuotationResponse> quotations = quotationService.getAllQuotations();
         ApiResponse<List<QuotationResponse>> response = ApiResponse.success(quotations);
@@ -28,6 +30,7 @@ public class QuotationController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<QuotationResponse>> getQuotationById(@PathVariable Long id){
         QuotationResponse quotation = quotationService.getQuotationById(id);
         ApiResponse<QuotationResponse> response = ApiResponse.success(quotation);
@@ -35,6 +38,7 @@ public class QuotationController {
     }
 
     @PostMapping("/newQuotation")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<QuotationResponse>> createQuotation(@Valid @RequestBody QuotationRequest quotationRequest){
         QuotationResponse quotation = quotationService.createQuotation(quotationRequest);
         ApiResponse<QuotationResponse> response = ApiResponse.success(quotation);
@@ -42,13 +46,15 @@ public class QuotationController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<QuotationResponse>> updateQuotation(@PathVariable Long id, @Valid @RequestBody QuotationRequest quotationRequest) {
         QuotationResponse quotation = quotationService.updateQuotation(id, quotationRequest);
         ApiResponse<QuotationResponse> response = ApiResponse.success(quotation);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-@DeleteMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> deleteQuotation(@PathVariable Long id) {
         quotationService.deleteQuotation(id);
         ApiResponse<Void> response = ApiResponse.success(null);

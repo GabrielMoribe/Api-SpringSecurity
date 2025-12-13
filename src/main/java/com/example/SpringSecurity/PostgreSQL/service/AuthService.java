@@ -7,6 +7,7 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.RefreshToken;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
+import com.example.SpringSecurity.PostgreSQL.domain.enums.Roles;
 import com.example.SpringSecurity.PostgreSQL.exceptions.authExceptions.*;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import org.springframework.context.annotation.Lazy;
@@ -63,6 +64,7 @@ public class AuthService implements UserDetailsService {
         user.setEmail(request.email().toLowerCase());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setEnabled(false);
+        user.setRole(Roles.USER);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(3));
     }

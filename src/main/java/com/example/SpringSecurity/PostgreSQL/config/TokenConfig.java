@@ -22,6 +22,7 @@ public class TokenConfig {
         return JWT.create()
                 .withClaim("userId" , user.getId())
                 .withSubject(user.getEmail())
+                .withClaim("role" ,user.getRole().name())
                 .withExpiresAt(Instant.now().plusSeconds(600))
                 .withIssuedAt(Instant.now())
                 .sign(algorithm);
@@ -34,6 +35,7 @@ public class TokenConfig {
             return Optional.of(JWTUserData.builder()
                     .userId(decodedJWT.getClaim("userId").asLong())
                     .email(decodedJWT.getSubject())
+                    .role(decodedJWT.getClaim("role").asString())
                     .build());
         }
         catch(JWTVerificationException e ){

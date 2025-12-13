@@ -7,6 +7,7 @@ import com.example.SpringSecurity.PostgreSQL.service.ClientService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class ClientController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<List<ClientResponse>>> getAllClients() {
         List<ClientResponse> clients = clientService.getAllClients();
         ApiResponse<List<ClientResponse>> response = ApiResponse.success(clients);
@@ -28,6 +30,7 @@ public class ClientController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<ClientResponse>> getClient(@PathVariable Long id) {
         ClientResponse client = clientService.getClientById(id);
         ApiResponse<ClientResponse> response = ApiResponse.success(client);
@@ -35,6 +38,7 @@ public class ClientController {
     }
 
     @PostMapping("/newClient")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<ClientResponse>> createClient(@Valid @RequestBody CreateClientRequest newClient) {
         ClientResponse client = clientService.createClient(newClient);
         ApiResponse<ClientResponse> response = ApiResponse.success(client);
@@ -42,6 +46,7 @@ public class ClientController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<ClientResponse>> updateClient(@PathVariable Long id , @Valid @RequestBody CreateClientRequest updatedClient){
         ClientResponse client = clientService.updateClient(id , updatedClient);
         ApiResponse<ClientResponse> response = ApiResponse.success(client);
@@ -49,6 +54,7 @@ public class ClientController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> deleteClient(@PathVariable Long id) {
         clientService.deleteClient(id);
         ApiResponse<Void> response = ApiResponse.success(null);

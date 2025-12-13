@@ -1,11 +1,13 @@
 package com.example.SpringSecurity.PostgreSQL.domain.entity;
 
+import com.example.SpringSecurity.PostgreSQL.domain.enums.Roles;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -43,6 +45,9 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    private Roles role = Roles.USER;
+
     @Column(name = "password_reset_token")
     private String passwordResetToken;
 
@@ -62,7 +67,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        if (this.role == null){
+            return List.of();
+        }
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     @Override

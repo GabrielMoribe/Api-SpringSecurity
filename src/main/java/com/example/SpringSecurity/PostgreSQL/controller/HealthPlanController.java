@@ -5,6 +5,7 @@ import com.example.SpringSecurity.PostgreSQL.domain.dto.response.HealthPlanRespo
 import com.example.SpringSecurity.PostgreSQL.service.HealthPlanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,7 @@ public class HealthPlanController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('USER')")
     private ResponseEntity<ApiResponse<List<HealthPlanResponse>>> getAllHealthPlans(){
         List<HealthPlanResponse> plans = healthPlanService.findAll();
         ApiResponse<List<HealthPlanResponse>> response = ApiResponse.success(plans);
