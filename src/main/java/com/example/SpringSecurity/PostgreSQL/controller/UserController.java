@@ -3,7 +3,7 @@ package com.example.SpringSecurity.PostgreSQL.controller;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.ChangeEmailRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.UpdateUserRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UpdateUserResponse;
+import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.service.UserService;
 import jakarta.validation.Valid;
@@ -25,16 +25,16 @@ public class UserController {
 
     @GetMapping("/profile")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ApiResponse<UpdateUserResponse>> getUserProfile() {
+    public ResponseEntity<ApiResponse<UserResponse>> getUserProfile() {
         User user = userService.findUser();
-        ApiResponse<UpdateUserResponse> response = ApiResponse.success(new UpdateUserResponse(user.getName(), user.getEmail()));
+        ApiResponse<UserResponse> response = ApiResponse.success(new UserResponse(user.getName(), user.getEmail()));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @PutMapping("/profile/update")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ApiResponse<UpdateUserResponse>> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
         User updatedUser = userService.updateUser(updateUserRequest);
-        ApiResponse<UpdateUserResponse> response = ApiResponse.success(new UpdateUserResponse(updatedUser.getName(), updatedUser.getEmail()));
+        ApiResponse<UserResponse> response = ApiResponse.success(new UserResponse(updatedUser.getName(), updatedUser.getEmail()));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

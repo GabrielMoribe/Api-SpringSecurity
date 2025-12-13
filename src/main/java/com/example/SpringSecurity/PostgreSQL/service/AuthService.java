@@ -3,8 +3,7 @@ package com.example.SpringSecurity.PostgreSQL.service;
 import com.example.SpringSecurity.PostgreSQL.config.TokenConfig;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.LoginResponse;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.response.RegUserResponse;
-import com.example.SpringSecurity.PostgreSQL.domain.dto.response.VerifyUserResponse;
+import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.RefreshToken;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.domain.enums.Roles;
@@ -54,8 +53,9 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado"));
     }
 
-    private RegUserResponse mapToResponse(User user) {
-        return new RegUserResponse(user.getName(), user.getEmail());
+    private UserResponse mapToResponse(User user) {
+
+        return new UserResponse(user.getName(), user.getEmail());
     }
 
 
@@ -90,7 +90,7 @@ public class AuthService implements UserDetailsService {
     }
 
     @Transactional
-    public RegUserResponse register(RegUserRequest request) {
+    public UserResponse register(RegUserRequest request) {
         Optional<User> existingUserOpt = userRepository.findUserByEmail(request.email());
         if(existingUserOpt.isPresent()){
             if(existingUserOpt.get().isEnabled()){
@@ -113,7 +113,7 @@ public class AuthService implements UserDetailsService {
 
 
     @Transactional
-    public VerifyUserResponse verifyUser(VerifyUserRequest request) {
+    public void verifyUser(VerifyUserRequest request) {
         Optional<User> userOpt = userRepository.findUserByEmail(request.email());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
@@ -133,7 +133,6 @@ public class AuthService implements UserDetailsService {
         else {
             throw new UsernameNotFoundException("Usuario nao encontrado");
         }
-        return new VerifyUserResponse("Usuario verificado com sucesso");
     }
 
     @Transactional
@@ -189,7 +188,7 @@ public class AuthService implements UserDetailsService {
 
 
     @Transactional
-    public void forgotPassword(ForgotPasswordRequest request) {
+    public void forgotPassword(EmailRequest request) {
         Optional<User> userOpt = userRepository.findUserByEmail(request.email());
 
         if (userOpt.isPresent()) {

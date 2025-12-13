@@ -18,29 +18,29 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<RegUserResponse>> register(@Valid @RequestBody RegUserRequest request) {
-        RegUserResponse register = authService.register(request);
-        ApiResponse<RegUserResponse> response = ApiResponse.success(register);
+    public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody RegUserRequest request) {
+        UserResponse register = authService.register(request);
+        ApiResponse<UserResponse> response = ApiResponse.success(register);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<ApiResponse<VerifyUserResponse>> verify(@Valid @RequestBody VerifyUserRequest request) {
-        VerifyUserResponse verify = authService.verifyUser(request);
-        ApiResponse<VerifyUserResponse> response = ApiResponse.success(verify);
+    public ResponseEntity<ApiResponse<String>> verify(@Valid @RequestBody VerifyUserRequest request) {
+        authService.verifyUser(request);
+        ApiResponse<String> response = ApiResponse.success("Usuario verificado com sucesso.");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @GetMapping("/verify-account")
-    public ResponseEntity<ApiResponse<VerifyUserResponse>> verifyAccount(
+    public ResponseEntity<ApiResponse<String>> verifyAccount(
             @RequestParam("email") String email,
             @RequestParam("code") String code) {
         VerifyUserRequest request = new VerifyUserRequest(email, code);
-        VerifyUserResponse verify = authService.verifyUser(request);
-        ApiResponse<VerifyUserResponse> response = ApiResponse.success(verify);
+        authService.verifyUser(request);
+        ApiResponse<String> response = ApiResponse.success("Usuario verificado com sucesso.");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @PostMapping("/verify-account/resend")
-    public ResponseEntity<ApiResponse<String>> resendVerificationCode(@Valid @RequestBody ResendVerificatioCodeRequest request) {
+    public ResponseEntity<ApiResponse<String>> resendVerificationCode(@Valid @RequestBody EmailRequest request) {
         authService.resendVerificationCode(request.email());
         ApiResponse<String> response = ApiResponse.success("Um novo codigo de verificacao foi enviado para " + request.email());
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -54,7 +54,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody EmailRequest request) {
         authService.forgotPassword(request);
         ApiResponse<String> response = ApiResponse.success("Um email foi enviado para " + request.email() + " com instruções para redefinir sua senha.");
         return ResponseEntity.status(HttpStatus.OK).body(response);
