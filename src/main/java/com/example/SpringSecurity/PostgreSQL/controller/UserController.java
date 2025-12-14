@@ -1,6 +1,6 @@
 package com.example.SpringSecurity.PostgreSQL.controller;
 
-import com.example.SpringSecurity.PostgreSQL.domain.dto.request.ChangeEmailRequest;
+import com.example.SpringSecurity.PostgreSQL.domain.dto.request.EmailRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.UpdateUserRequest;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UserResponse;
@@ -40,8 +40,8 @@ public class UserController {
 
     @PostMapping("/profile/change-email")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ApiResponse<String>> changeEmail(@Valid @RequestBody ChangeEmailRequest changeEmailRequest) {
-        userService.changeEmail(changeEmailRequest.newEmail());
+    public ResponseEntity<ApiResponse<String>> changeEmail(@Valid @RequestBody EmailRequest changeEmailRequest) {
+        userService.changeEmail(changeEmailRequest.email());
         ApiResponse<String> response = ApiResponse.success("Enviamos um email de confirmacao");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

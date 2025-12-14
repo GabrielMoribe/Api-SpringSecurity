@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN mp_payment_id VARCHAR(255);
+ALTER TABLE users ADD COLUMN mp_subscription_status VARCHAR(50) DEFAULT 'INACTIVE';

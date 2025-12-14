@@ -1,6 +1,7 @@
 package com.example.SpringSecurity.PostgreSQL.domain.entity;
 
 import com.example.SpringSecurity.PostgreSQL.domain.enums.Roles;
+import com.example.SpringSecurity.PostgreSQL.domain.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -62,6 +63,13 @@ public class User implements UserDetails {
 
     @Column(name = "new_email_token_expires_at")
     private LocalDateTime newEmailTokenExpiresAt;
+
+    @Column(name="mp_payment_id")
+    private String mpPaymentId;
+
+    @Column(name="mp_subscription_status")
+    @Enumerated(EnumType.STRING)
+    private SubscriptionStatus subscriptionStatus = SubscriptionStatus.INACTIVE;
 
 
 
