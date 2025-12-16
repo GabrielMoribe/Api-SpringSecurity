@@ -3,6 +3,7 @@ package com.example.SpringSecurity.PostgreSQL.service;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UserResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserDeleteException;
+import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserUpdateException;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,21 @@ public class AdminService {
             userRepository.deleteById(id);
         } catch (Exception e) {
             throw new UserDeleteException("Erro ao deletar usuario - " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void disableUser(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new IllegalArgumentException("Usuario nao encontrado");
+        }
+        try {
+            User userToDisable = user.get();
+            userToDisable.setEnabled(false);
+            userRepository.save(userToDisable);
+        } catch (Exception e) {
+            throw new UserUpdateException("Erro ao desabilitar usuario - " + e.getMessage());
         }
     }
 }

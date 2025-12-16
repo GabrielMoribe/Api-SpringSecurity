@@ -35,4 +35,11 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PutMapping("/disable-user/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<String>> disableUser(@PathVariable Long id) {
+        adminService.disableUser(id);
+        ApiResponse<String> response = ApiResponse.success("Usuario desabilitado com sucesso");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
