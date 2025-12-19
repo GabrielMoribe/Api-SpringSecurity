@@ -5,10 +5,10 @@ import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserDeleteException;
 import com.example.SpringSecurity.PostgreSQL.exceptions.userExceptions.UserUpdateException;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,13 +20,12 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> findAllUsers() {
-        return userRepository.findAll()
-                .stream()
+    public Page<UserResponse> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
                 .map(user -> new UserResponse(
                         user.getName(),
                         user.getEmail()
-                )).toList();
+                ));
     }
 
     @Transactional

@@ -3,6 +3,7 @@ package com.example.SpringSecurity.PostgreSQL.controller;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.ApiResponse;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.UserResponse;
 import com.example.SpringSecurity.PostgreSQL.service.AdminService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,10 +20,10 @@ public class AdminController {
         this.adminService= adminService;
     }
 
-    @GetMapping("/all-users")
+    @GetMapping("allusers")  //allusers?page=0&size=10
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
-        List<UserResponse> users = adminService.findAllUsers();
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers(Pageable pageable) {
+        List<UserResponse> users = adminService.findAll(pageable).getContent();
         ApiResponse<List<UserResponse>> response = ApiResponse.success(users);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
