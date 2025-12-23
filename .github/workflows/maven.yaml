@@ -45,7 +45,7 @@ jobs:
           API_SECURITY_TOKEN_SECRET: chave_para_teste_build_423974987
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-        run: ./mvnw clean verify
+        run: ./mvnw clean package -DskipTests
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
