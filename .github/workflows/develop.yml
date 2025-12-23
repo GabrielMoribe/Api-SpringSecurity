@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -18,4 +19,4 @@ jobs:
         aws-region: 'us-east-1'
         aws-s3-statefile-bucket: 'gabrielmoribe-us-east-1-terraform-statefile'
         aws-lock-dynamo-table: 'gabrielmoribe-sa-east-1-terraform-lock'
-
+      secrets: inherit

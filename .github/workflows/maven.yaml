@@ -2,7 +2,8 @@ name: Java CI pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
+  workflow_dispatch:
 
 
 jobs:
