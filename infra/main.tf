@@ -1,17 +1,13 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.99.1"
-    }
+resource "aws_s3_bucket" "s3_bucket" {
+  bucket = var.bucket_name
+  tags = {
+    Name        = var.bucket_name
+    Environment = terraform.workspace
   }
-}
-provider "aws" {
-  region = "us-east-1"
 }
 
 resource "aws_security_group" "ec2_sg" {
-  name        = "test_ec2_security_group"
+  name        = "${terraform.workspace}-ec2-security-group"
   description = "Allow SSH and HTTP inbound traffic"
 
   ingress {
@@ -34,11 +30,20 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  tags = {
+    Name        = "${terraform.workspace}-ec2-security-group"
+    Environment = terraform.workspace
+  }
 }
 
 resource "aws_key_pair" "keypair" {
-  key_name = "aws_key_pair"
-  public_key = file("~/.ssh/id_ed25519.pub")
+  key_name   = "${terraform.workspace}-aws-key-pair"
+  # public_key = file("~/.ssh/id_ed25519.pub")
+  public_key = var.public_key
+  tags = {
+    Name        = "${terraform.workspace}-aws-key-pair"
+    Environment = terraform.workspace
+  }
 }
 
 resource "aws_instance" "server" {
@@ -51,8 +56,12 @@ resource "aws_instance" "server" {
     email_username            = var.email_username
     email_password            = var.email_password
   })
-  key_name = aws_key_pair.keypair.key_name
+  key_name               = aws_key_pair.keypair.key_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  tags = {
+    Name        = "${terraform.workspace}-app-server"
+    Environment = terraform.workspace
+  }
 }
 
 output "ec2_public_ip" {
