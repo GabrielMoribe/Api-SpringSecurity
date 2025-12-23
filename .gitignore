@@ -34,7 +34,7 @@ build/
 
 .env
 .secrets
-*.tfvars
+infra/terraform.tfvars
 *.tfstate
 *.tfstate.backup
 *.terraform.lock.hcl

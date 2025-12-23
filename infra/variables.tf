@@ -1,3 +1,8 @@
+variable "bucket_name" {
+    description = "Nome do bucket S3 para os arquivos tfstate"
+    type        = string
+}
+
 variable "db_username" {
   description = "Username do banco de dados"
   type        = string
@@ -7,6 +12,11 @@ variable "db_password" {
   description = "Senha do banco de dados"
   type        = string
   sensitive   = true
+}
+
+variable "public_key" {
+  description = "Chave ssh pública para acesso ao EC2"
+  type        = string
 }
 
 variable "api_security_token_secret" {
