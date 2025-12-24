@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.GET, "users/profile/change-email/confirm").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/subscriptions/webhook").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/subscriptions/callback").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
