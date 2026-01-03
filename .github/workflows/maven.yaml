@@ -10,21 +10,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Banco de dados
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_DB: testSpringSecurity
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+#    # Banco de dados
+#    services:
+#      postgres:
+#        image: postgres:latest
+#        env:
+#          POSTGRES_DB: testSpringSecurity
+#          POSTGRES_USER: postgres
+#          POSTGRES_PASSWORD: password
+#        ports:
+#          - 5432:5432
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -45,6 +45,7 @@ jobs:
           API_SECURITY_TOKEN_SECRET: chave_temporaria_423974987
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          TESTCONTAINERS_RYUK_DISABLED: true
         run: ./mvnw test
 
       - name: Build with Maven
