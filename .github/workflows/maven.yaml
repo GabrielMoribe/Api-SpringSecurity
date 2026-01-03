@@ -3,28 +3,14 @@ name: Java CI pipeline
 on:
   push:
     branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
   workflow_dispatch:
 
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-#    # Banco de dados
-#    services:
-#      postgres:
-#        image: postgres:latest
-#        env:
-#          POSTGRES_DB: testSpringSecurity
-#          POSTGRES_USER: postgres
-#          POSTGRES_PASSWORD: password
-#        ports:
-#          - 5432:5432
-#        options: >-
-#          --health-cmd pg_isready
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -38,15 +24,7 @@ jobs:
           cache: maven
 
       - name: Run Tests
-        env:
-          DB_URL: jdbc:postgresql://localhost:5432/testSpringSecurity
-          DB_USERNAME: postgres
-          DB_PASSWORD: password
-          API_SECURITY_TOKEN_SECRET: chave_temporaria_423974987
-          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          TESTCONTAINERS_RYUK_DISABLED: true
-        run: ./mvnw test
+        run: ./mvnw test -Dspring.profiles.active=test
 
       - name: Build with Maven
         env:
@@ -56,9 +34,10 @@ jobs:
           API_SECURITY_TOKEN_SECRET: chave_temporaria_423974987
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-#          MP_ACCESS_TOKEN: ${{ secrets.MP_ACCESS_TOKEN }}
-#          MP_WEBHOOK_SECRET: ${{ secrets.MP_WEBHOOK_SECRET }}
-#          MP_NOTIFICATION_URL: ${{ secrets.MP_NOTIFICATION_URL }}
+          MP_ACCESS_TOKEN: ${{ secrets.MP_ACCESS_TOKEN }}
+          MP_WEBHOOK_SECRET: ${{ secrets.MP_WEBHOOK_SECRET }}
+          MP_NOTIFICATION_URL: ${{ secrets.MP_NOTIFICATION_URL }}
+          MP_BACK_URL: ${{ secrets.MP_BACK_URL }}
         run: ./mvnw clean package -DskipTests
 
       - name: Login to DockerHub
