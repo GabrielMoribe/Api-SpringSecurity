@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
 
     @GetMapping("/profile")
     @PreAuthorize("hasRole('USER')")
@@ -30,6 +30,8 @@ public class UserController {
         ApiResponse<UserResponse> response = ApiResponse.success(new UserResponse(user.getName(), user.getEmail()));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+
     @PutMapping("/profile/update")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
@@ -38,6 +40,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+
     @PostMapping("/profile/change-email")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<String>> changeEmail(@Valid @RequestBody EmailRequest changeEmailRequest) {
@@ -45,8 +48,9 @@ public class UserController {
         ApiResponse<String> response = ApiResponse.success("Enviamos um email de confirmacao");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+
     @GetMapping("/profile/change-email/confirm")
-    //@PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<String>> verifyNewEmail(
             @RequestParam("token") String token){
         userService.confirmEmailChange(token);
