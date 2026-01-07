@@ -381,11 +381,10 @@ public class UserControllerTest {
                     .andExpect(jsonPath("$.success").value(true));
         }
         @Test
-        @DisplayName("USER não deve acessar rotas de ADMIN")
-        void shouldDenyBrokerAccessToAdminRoute() throws Exception {
-            authenticateAsUser();
-            mockMvc.perform(get("/admin/allusers"))
-                    .andExpect(status().isForbidden())
+        @DisplayName("Deve negar acesso a endpoint de usuário para usuário não autenticado")
+        void shouldDenyAccessToUserRoute() throws Exception {
+            mockMvc.perform(get("/users/profile"))
+                    .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.success").value(false));
         }
         @Test
