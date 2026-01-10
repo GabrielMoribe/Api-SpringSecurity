@@ -32,8 +32,8 @@ public class AuthController {
     }
     @GetMapping("/verify-account")
     public ResponseEntity<ApiResponse<String>> verifyAccount(
-            @RequestParam("email") String email,
-            @RequestParam("code") String code) {
+            @RequestParam(value = "email" , required = true) String email,
+            @RequestParam(value = "code"  , required = true) String code) {
         VerifyUserRequest request = new VerifyUserRequest(email, code);
         authService.verifyUser(request);
         ApiResponse<String> response = ApiResponse.success("Usuario verificado com sucesso.");
@@ -68,8 +68,8 @@ public class AuthController {
     }
 
     @PostMapping("/access-token")
-    public ResponseEntity<ApiResponse<String>> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshToken) {
-        String newAccessToken  = authService.newAccessToken(refreshToken.refreshToken());
+    public ResponseEntity<ApiResponse<String>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        String newAccessToken  = authService.newAccessToken(request.refreshToken());
         ApiResponse<String> response = ApiResponse.success(newAccessToken);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

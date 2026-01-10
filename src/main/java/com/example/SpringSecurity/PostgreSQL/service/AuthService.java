@@ -117,6 +117,9 @@ public class AuthService implements UserDetailsService {
         Optional<User> userOpt = userRepository.findUserByEmail(request.email());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+            if(user.isEnabled()){
+                throw new UserAlreadyVerified("Usuario ja verificado");
+            }
             if(user.getVerificationExpiresAt().isBefore(LocalDateTime.now())) {
                 throw new ExpiredVerificationCodeException("Codigo expirado");
             }
@@ -192,6 +195,9 @@ public class AuthService implements UserDetailsService {
         Optional<User> userOpt = userRepository.findUserByEmail(request.email());
 
         if (userOpt.isPresent()) {
+            if(!userOpt.get().isEnabled()){
+                throw new UserNotVerifiedException("Usuario nao verificado");
+            }
             User user = userOpt.get();
             String token = UUID.randomUUID().toString();
             user.setPasswordResetToken(token);
