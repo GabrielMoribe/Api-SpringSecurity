@@ -1,5 +1,8 @@
 package com.example.SpringSecurity.PostgreSQL.integrationTests.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.example.SpringSecurity.PostgreSQL.config.JWTUserData;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.RefreshToken;
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
@@ -7,22 +10,27 @@ import com.example.SpringSecurity.PostgreSQL.domain.enums.Roles;
 import com.example.SpringSecurity.PostgreSQL.repository.RefreshTokenRepository;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,6 +47,13 @@ public class AuthControllerTest {
     @Container
     @ServiceConnection
     static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:16-alpine");
+
+    @Container
+    @ServiceConnection
+    static GenericContainer<?> redisContainer = new GenericContainer<>("redis:7-alpine")
+            .withExposedPorts(6379);
+
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -49,9 +64,13 @@ public class AuthControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     private User user1;
     private User user2;
+    @Value("${api.security.token.secret}")
+    private String secret;
 
 
     @BeforeEach
@@ -74,6 +93,31 @@ public class AuthControllerTest {
         user2.setEnabled(false);
         user2.setRole(Roles.USER);
         user2 = userRepository.save(user2);
+    }
+
+
+
+    private void authenticateAsUser() {
+        JWTUserData jwtUserData = JWTUserData.builder()
+                .userId(user1.getId())
+                .email(user1.getEmail())
+                .role("USER")
+                .build();
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        jwtUserData,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_" + "USER"))));
+    }
+    private String generateToken(){
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        return JWT.create()
+                .withClaim("userId" , user1.getId())
+                .withSubject(user1.getEmail())
+                .withClaim("role" ,user1.getRole().name())
+                .withExpiresAt(Instant.now().plusSeconds(300))
+                .withIssuedAt(Instant.now())
+                .sign(algorithm);
     }
 
 
@@ -388,6 +432,58 @@ public class AuthControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.message").value("Erro de validação: Senha deve ter no minimo 6 caracteres"));
+        }
+    }
+
+
+
+    @Nested
+    @DisplayName("endpoint: /logout")
+    class logout {
+        @Test
+        @DisplayName("Deve deslogar o usuario com sucesso")
+        void shouldLogoutUserSuccessfully() throws Exception {
+            authenticateAsUser();
+            String token = generateToken();
+            mockMvc.perform(post("/auth/logout")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.message").value("Operação realizada com sucesso"));
+            SecurityContextHolder.clearContext();
+        }
+        @Test
+        @DisplayName("Deve falhar ao usar token após logout")
+        void shouldFailToUseTokenAfterLogout() throws Exception {
+            LoginRequest loginRequest = new LoginRequest("user1@email.com", "123123");
+            String loginResponse = mockMvc.perform(post("/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            String accessToken = objectMapper.readTree(loginResponse)
+                    .get("data")
+                    .get("token")
+                    .asText();
+
+            mockMvc.perform(post("/auth/logout")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(get("/users/profile")
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isUnauthorized());
+        }
+        @Test
+        @DisplayName("Deve falhar ao deslogar sem token de acesso")
+        void shouldFailToLogoutWithoutAccessToken() throws Exception {
+            mockMvc.perform(post("/auth/logout")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isUnauthorized());
         }
     }
 

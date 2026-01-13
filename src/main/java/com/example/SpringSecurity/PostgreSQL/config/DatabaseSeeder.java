@@ -6,9 +6,11 @@ import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+@Profile("!test")
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;

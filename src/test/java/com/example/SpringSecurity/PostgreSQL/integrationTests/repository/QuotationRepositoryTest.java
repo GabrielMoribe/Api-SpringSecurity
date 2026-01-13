@@ -137,7 +137,7 @@ public class QuotationRepositoryTest {
         @Test
         @DisplayName("Deve retornar vazio quando não existir cotação para o id e corretor")
         void shouldReturnEmptyWhenNoQuotationForIdAndBroker() {
-            Optional<Quotation> quotation = quotationRepository.findByIdAndClient_Broker(2L, user);
+            Optional<Quotation> quotation = quotationRepository.findByIdAndClient_Broker(999L, user);
             assertThat(quotation).isNotPresent();
         }
     }
