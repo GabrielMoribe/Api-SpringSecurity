@@ -2,6 +2,7 @@ package com.example.SpringSecurity.PostgreSQL.config;
 
 import com.example.SpringSecurity.PostgreSQL.domain.entity.User;
 import com.example.SpringSecurity.PostgreSQL.repository.UserRepository;
+import com.example.SpringSecurity.PostgreSQL.service.TokenBlackListService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,11 +23,13 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenConfig tokenConfig;
     private final UserRepository userRepository;
+    private final TokenBlackListService tokenBlackListService;
 
 
-    public SecurityFilter(TokenConfig tokenConfig, UserRepository userRepository) {
+    public SecurityFilter(TokenConfig tokenConfig, UserRepository userRepository , TokenBlackListService tokenBlackListService) {
         this.tokenConfig = tokenConfig;
         this.userRepository = userRepository;
+        this.tokenBlackListService = tokenBlackListService;
     }
 
     @Override
@@ -35,6 +38,12 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if(Strings.isNotEmpty(authHeader) && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring("Bearer ".length());
+
+            if(tokenBlackListService.isBlacklisted(token)) {
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request, response);
+                return;
+            }
             Optional<JWTUserData> optUser = tokenConfig.validateToken(token);
             if(optUser.isPresent()) {
                 JWTUserData userData = optUser.get();

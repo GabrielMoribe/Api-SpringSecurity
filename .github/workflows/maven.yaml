@@ -31,6 +31,8 @@ jobs:
           DB_URL: jdbc:postgresql://localhost:5432/testSpringSecurity
           DB_USERNAME: postgres
           DB_PASSWORD: password
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           API_SECURITY_TOKEN_SECRET: ${{ secrets.API_SECURITY_TOKEN_SECRET }}
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}

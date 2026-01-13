@@ -8,15 +8,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
-
 @Configuration
-public class AdminSeeder implements CommandLineRunner {
+public class DatabaseSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AdminSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public DatabaseSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -24,20 +22,31 @@ public class AdminSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        Optional<User> userAdmin = userRepository.findUserByEmail("admin@email.com");
+        seedAdmin();
+        seedUser();
+    }
 
-        if (userAdmin.isEmpty()) {
+    private void seedAdmin() {
+        if (userRepository.findUserByEmail("admin@email.com").isEmpty()) {
             User admin = new User();
-            admin.setName("Admin");
+            admin.setName("admin");
             admin.setEmail("admin@email.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(Roles.ADMIN);
             admin.setEnabled(true);
-            try{
-                userRepository.save(admin);
-            } catch(Exception e){
-                throw new RuntimeException("Erro ao criar usuario admin - " + e.getMessage());
-            }
+            userRepository.save(admin);
+        }
+    }
+
+    private void seedUser() {
+        if (userRepository.findUserByEmail("user@email.com").isEmpty()) {
+            User user = new User();
+            user.setName("user");
+            user.setEmail("user@email.com");
+            user.setPassword(passwordEncoder.encode("user123"));
+            user.setRole(Roles.USER);
+            user.setEnabled(true);
+            userRepository.save(user);
         }
     }
 }

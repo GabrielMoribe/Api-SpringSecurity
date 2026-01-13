@@ -1,5 +1,6 @@
 package com.example.SpringSecurity.PostgreSQL.service;
 
+import com.example.SpringSecurity.PostgreSQL.config.JWTUserData;
 import com.example.SpringSecurity.PostgreSQL.config.TokenConfig;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.request.*;
 import com.example.SpringSecurity.PostgreSQL.domain.dto.response.LoginResponse;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,14 +37,16 @@ public class AuthService implements UserDetailsService {
     private final TokenConfig tokenConfig;
     private final EmailService emailService;
     private final RefreshTokenService refreshTokenService;
+    private final TokenBlackListService tokenBlackListService;
 
-    public AuthService(UserRepository userRepository,PasswordEncoder passwordEncoder,@Lazy AuthenticationManager authenticationManager,TokenConfig tokenConfig,EmailService emailService,RefreshTokenService refreshTokenService) {
+    public AuthService(UserRepository userRepository,PasswordEncoder passwordEncoder,@Lazy AuthenticationManager authenticationManager,TokenConfig tokenConfig,EmailService emailService,RefreshTokenService refreshTokenService , TokenBlackListService tokenBlackListService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenConfig = tokenConfig;
         this.emailService = emailService;
         this.refreshTokenService = refreshTokenService;
+        this.tokenBlackListService = tokenBlackListService;
     }
 
 
@@ -237,6 +241,22 @@ public class AuthService implements UserDetailsService {
         user.setPasswordResetToken(null);
         user.setPasswordResetTokenExpiresAt(null);
         userRepository.save(user);
+    }
+
+    public void logout(String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Optional<Instant> expiration = tokenConfig.getTokenExpiration(token);
+        if (expiration.isPresent()) {
+            tokenBlackListService.addToBlacklist(token , expiration.get());
+
+            Optional<JWTUserData> userData = tokenConfig.validateToken(token);
+            if(userData.isPresent()){
+                User user = userRepository.findById(userData.get().userId())
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado"));
+                refreshTokenService.deleteByUser(user);
+            }
+        }
+
     }
 
 

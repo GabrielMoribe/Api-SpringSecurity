@@ -17,13 +17,15 @@ public class TokenConfig {
     @Value("${api.security.token.secret}") 
     private String secret ;
 
+    private static final long expiration = 300;
+
     public String generateToken(User user){
         Algorithm algorithm = Algorithm.HMAC256(secret);
         return JWT.create()
                 .withClaim("userId" , user.getId())
                 .withSubject(user.getEmail())
                 .withClaim("role" ,user.getRole().name())
-                .withExpiresAt(Instant.now().plusSeconds(600))
+                .withExpiresAt(Instant.now().plusSeconds(expiration))
                 .withIssuedAt(Instant.now())
                 .sign(algorithm);
     }
@@ -39,6 +41,17 @@ public class TokenConfig {
                     .build());
         }
         catch(JWTVerificationException e ){
+            return Optional.empty();
+        }
+    }
+
+
+    public Optional<Instant> getTokenExpiration(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            DecodedJWT decodedJWT = JWT.require(algorithm).build().verify(token);
+            return Optional.of(decodedJWT.getExpiresAtAsInstant());
+        } catch (JWTVerificationException e) {
             return Optional.empty();
         }
     }

@@ -6,6 +6,7 @@ import com.example.SpringSecurity.PostgreSQL.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -50,6 +51,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse login = authService.login(request);
         ApiResponse<LoginResponse> response = ApiResponse.success(login);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<String>> logout(@RequestHeader("Authorization") String accessToken) {
+        authService.logout(accessToken);
+        ApiResponse<String> response = ApiResponse.success("Logout realizado com sucesso");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

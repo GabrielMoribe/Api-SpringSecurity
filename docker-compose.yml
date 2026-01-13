@@ -9,15 +9,25 @@ services:
     ports:
       - "5432:5432"
 
+  redis:
+    image: redis:7-alpine
+    restart: always
+    container_name: redis_cache
+    ports:
+      - '6379:6379'
+
+
   app:
     build: .
     container_name: spring_app
     ports:
       - "8080:8080"
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/testSpringSecurity
+      DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
       API_SECURITY_TOKEN_SECRET: ${API_SECURITY_TOKEN_SECRET}
       EMAIL_USERNAME: ${EMAIL_USERNAME}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
@@ -27,4 +37,5 @@ services:
       MP_BACK_URL: ${MP_BACK_URL}
     depends_on:
       - postgres
+      - redis
 
